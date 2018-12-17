@@ -272,9 +272,21 @@ public class SnapshotReader extends AbstractReader {
                 // First, start a transaction and request that a consistent MVCC snapshot is obtained immediately.
                 // See http://dev.mysql.com/doc/refman/5.7/en/commit.html
                 if (!isRunning()) return;
-                logger.info("Step 2: start transaction with consistent snapshot");
-                sql.set("START TRANSACTION WITH CONSISTENT SNAPSHOT");
-                mysql.execute(sql.get());
+                logger.info("Step 2: start transaction with consistent INNODB snapshot");
+                boolean consistentStart = false;
+                try {
+                    sql.set("START TRANSACTION WITH CONSISTENT SNAPSHOT");
+                    mysql.execute(sql.get());
+                    consistentStart = true;
+                } catch (SQLException e) {
+                    logger.info("Step 2 error", e);
+                    // Continue anyway
+
+                }
+                if (!consistentStart) {
+                    sql.set("START TRANSACTION WITH CONSISTENT INNODB SNAPSHOT");
+                    mysql.execute(sql.get());    
+                }
                 isTxnStarted = true;
 
                 // ------------------------------------

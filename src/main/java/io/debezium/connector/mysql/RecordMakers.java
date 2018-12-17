@@ -237,7 +237,7 @@ public class RecordMakers {
                     Map<String, ?> partition = source.partition();
                     Map<String, ?> offset = source.offsetForRow(rowNumber, numberOfRows);
                     Struct origin = source.struct(id);
-                    if (key != null && !Objects.equals(key, oldKey)) {
+                    // if (key != null && !Objects.equals(key, oldKey)) {
                         // The key has changed, so we need to deal with both the new key and old key.
                         // Consumers may push the events into a system that won't allow both records to exist at the same time,
                         // so we first want to send the delete event for the old key...
@@ -246,25 +246,25 @@ public class RecordMakers {
                         consumer.accept(record);
                         ++count;
 
-                        if (emitTombstoneOnDelete) {
-                            // Next send a tombstone event for the old key ...
-                            record = new SourceRecord(partition, offset, topicName, partitionNum, keySchema, oldKey, null, null);
-                            consumer.accept(record);
-                            ++count;
-                        }
+                        // if (emitTombstoneOnDelete) {
+                        //     // Next send a tombstone event for the old key ...
+                        //     record = new SourceRecord(partition, offset, topicName, partitionNum, keySchema, oldKey, null, null);
+                        //     consumer.accept(record);
+                        //     ++count;
+                        // }
 
                         // And finally send the create event ...
                         record = new SourceRecord(partition, offset, topicName, partitionNum,
                                 keySchema, key, envelope.schema(), envelope.create(valueAfter, origin, ts));
                         consumer.accept(record);
                         ++count;
-                    } else {
-                        // The key has not changed, so a simple update is fine ...
-                        SourceRecord record = new SourceRecord(partition, offset, topicName, partitionNum,
-                                keySchema, key, envelope.schema(), envelope.update(valueBefore, valueAfter, origin, ts));
-                        consumer.accept(record);
-                        ++count;
-                    }
+                    // } else {
+                    //     // The key has not changed, so a simple update is fine ...
+                    //     SourceRecord record = new SourceRecord(partition, offset, topicName, partitionNum,
+                    //             keySchema, key, envelope.schema(), envelope.update(valueBefore, valueAfter, origin, ts));
+                    //     consumer.accept(record);
+                    //     ++count;
+                    // }
                 }
                 return count;
             }
@@ -287,13 +287,13 @@ public class RecordMakers {
                     consumer.accept(record);
                     ++count;
 
-                    // And send a tombstone ...
-                    if (emitTombstoneOnDelete) {
-                        record = new SourceRecord(partition, offset, topicName, partitionNum,
-                                keySchema, key, null, null);
-                        consumer.accept(record);
-                        ++count;
-                    }
+                    // // And send a tombstone ...
+                    // if (emitTombstoneOnDelete) {
+                    //     record = new SourceRecord(partition, offset, topicName, partitionNum,
+                    //             keySchema, key, null, null);
+                    //     consumer.accept(record);
+                    //     ++count;
+                    // }
                 }
                 return count;
             }
